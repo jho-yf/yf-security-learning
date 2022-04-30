@@ -5,7 +5,11 @@
 
     <groupId>cn.jho.security</groupId>
     <artifactId>yf-security-learning</artifactId>
+    <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <module>yf-uaa-learning</module>
+    </modules>
     <name>yf-security-learning</name>
     <description>Security Learning</description>
 
