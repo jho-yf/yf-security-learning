@@ -1,8 +1,15 @@
 spring:
   application:
     name: yf-uaa
-  security:
-    user:
-      name: user
-      password: 123456
-      roles: USER,ADMIN
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+  pattern:
+    console: '%clr(%d{E HH:mm:ss.SSS}){blue} %clr(%-5p) %clr(${PID}){faint} %clr(---){faint}
+              %clr([%8.15t]){cyan} %clr(%-40.40logger{0}){blue} %clr(:){red} %clr(%m){faint}%n'
