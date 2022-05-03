@@ -23,6 +23,7 @@
         <lombok.version>1.18.22</lombok.version>
         <bootstrap.version>5.1.3</bootstrap.version>
         <jquery.version>3.6.0</jquery.version>
+        <passay.version>1.6.1</passay.version>
     </properties>
 
     <dependencyManagement>

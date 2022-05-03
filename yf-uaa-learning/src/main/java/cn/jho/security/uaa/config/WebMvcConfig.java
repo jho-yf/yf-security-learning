@@ -1,7 +1,12 @@
 package cn.jho.security.uaa.config;
 
+import org.passay.MessageResolver;
+import org.passay.spring.SpringMessageResolver;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -14,6 +19,18 @@ import org.springframework.web.servlet.resource.WebJarsResourceResolver;
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Bean
+    public MessageResolver messageResolver(MessageSource messageSource) {
+        return new SpringMessageResolver(messageSource);
+    }
+
+    @Bean
+    public LocalValidatorFactoryBean localValidatorFactoryBean(MessageSource messageSource) {
+        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+        bean.setValidationMessageSource(messageSource);
+        return bean;
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
