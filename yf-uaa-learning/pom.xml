@@ -52,6 +52,11 @@
             <artifactId>passay</artifactId>
             <version>${passay.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.zalando</groupId>
+            <artifactId>problem-spring-web</artifactId>
+            <version>${problom.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

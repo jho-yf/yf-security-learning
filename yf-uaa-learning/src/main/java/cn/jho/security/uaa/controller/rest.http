@@ -14,8 +14,8 @@ Content-Type: application/json
 
 {
   "username": "aaaa",
-  "password": "Za122_zz",
-  "matchingPassword": "Za122_zz",
-  "email": "xu-jihong@qq",
-  "name": "jho-yf"
+  "password": "Za122_zzf",
+  "matchingPassword": "Za122_zzf",
+  "email": "xu-jihong@qq.com",
+  "name": "jho-yf许"
 }
