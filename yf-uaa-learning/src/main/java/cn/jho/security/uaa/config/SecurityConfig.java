@@ -5,18 +5,29 @@ import cn.jho.security.uaa.handler.JsonAuthenticationSuccessHandler;
 import cn.jho.security.uaa.security.filter.RestAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
+
+import javax.sql.DataSource;
+import java.util.Map;
 
 /**
  * @author JHO xu-jihong@qq.com
@@ -25,11 +36,14 @@ import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @Import(SecurityProblemSupport.class)
+@Order(99)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper objectMapper;
 
     private final SecurityProblemSupport securityProblemSupport;
+
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -46,36 +60,43 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //         .logout(logout -> logout.logoutUrl("/perform_logout"))
         //         .rememberMe(rm -> rm.tokenValiditySeconds(24 * 60 * 60));
 
-        http.authorizeRequests(req -> req
+        http.requestMatchers(req -> req.mvcMatchers("/authorize/**", "/admin/**", "/api/**"))
+                // 设置无状态的session
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e.accessDeniedHandler(securityProblemSupport).authenticationEntryPoint(securityProblemSupport))
+                .authorizeRequests(req -> req
                         .antMatchers("/authorize/**").permitAll()
                         .antMatchers("/admin/**").hasRole("ADMIN")
                         .antMatchers("/api/**").hasRole("USER"))
                 // 替代内置filter
                 .addFilterAt(restAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 // 匹配路径禁用csrf
-                .csrf(csrf -> csrf.ignoringAntMatchers("/authorize/**", "/admin/**", "/api/**"))
-                .exceptionHandling(e -> e.accessDeniedHandler(securityProblemSupport).authenticationEntryPoint(securityProblemSupport));
-
+                // .csrf(csrf -> csrf.ignoringAntMatchers("/authorize/**", "/admin/**", "/api/**"))
+                .csrf(AbstractHttpConfigurer::disable)
+                .httpBasic(Customizer.withDefaults());
     }
 
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring()
-                .antMatchers("/public/**", "/error")
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
+        web.ignoring().antMatchers("/public/**", "/error/**", "/h2-console/**");
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("user")
-                .password(passwordEncoder().encode("1"))
-                .roles("USER", "ADMIN");
+        auth.userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder());
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        // 默认编码算法的 Id
+        val idForEncode = "bcrypt";
+        // 要支持的多种编码器
+        val encoders = Map.of(
+                idForEncode, new BCryptPasswordEncoder(),
+                "SHA-1", new MessageDigestPasswordEncoder("SHA-1")
+        );
+        return new DelegatingPasswordEncoder(idForEncode, encoders);
     }
 
     @Bean
