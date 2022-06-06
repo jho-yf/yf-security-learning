@@ -1,12 +1,15 @@
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.jdbc.core: TRACE
+    cn.jho: DEBUG
+  pattern:
+    console: '%clr(%d{E HH:mm:ss.SSS}){blue} %clr(%-5p) %clr(${PID}){faint} %clr(---){faint}
+              %clr([%8.15t]){cyan} %clr(%-40.40logger{0}){blue} %clr(:){red} %clr(%m){faint}%n'
+
 spring:
-  application:
-    name: yf-uaa
-  messages:
-    basename: messages
-    encoding: UTF-8
-    always-use-message-format: false
-    fallback-to-system-locale: true
-    use-code-as-default-message: false
+  profiles:
+    active: dev
   datasource:
     driver-class-name: org.h2.Driver
     password: ''
