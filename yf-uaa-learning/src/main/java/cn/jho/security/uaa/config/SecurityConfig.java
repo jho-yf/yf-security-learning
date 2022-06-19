@@ -2,14 +2,16 @@ package cn.jho.security.uaa.config;
 
 import cn.jho.security.uaa.handler.JsonAuthenticationFailureHandler;
 import cn.jho.security.uaa.handler.JsonAuthenticationSuccessHandler;
+import cn.jho.security.uaa.security.auth.ldap.LdapMultiAuthenticationProvider;
+import cn.jho.security.uaa.security.auth.ldap.LdapUserRepo;
 import cn.jho.security.uaa.security.filter.RestAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,6 +20,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
@@ -26,7 +29,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 
-import javax.sql.DataSource;
 import java.util.Map;
 
 /**
@@ -44,6 +46,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final SecurityProblemSupport securityProblemSupport;
 
     private final UserDetailsService userDetailsService;
+
+    private final UserDetailsPasswordService userDetailsPasswordService;
+
+    private final LdapUserRepo ldapUserRepo;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -83,8 +89,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());
+        auth.authenticationProvider(daoAuthenticationProvider());
+        auth.authenticationProvider(ldapMultiAuthenticationProvider());
+    }
+
+    @Bean
+    public LdapMultiAuthenticationProvider ldapMultiAuthenticationProvider() {
+        return new LdapMultiAuthenticationProvider(ldapUserRepo);
+    }
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        daoAuthenticationProvider.setUserDetailsPasswordService(userDetailsPasswordService);
+        return daoAuthenticationProvider;
     }
 
     @Bean

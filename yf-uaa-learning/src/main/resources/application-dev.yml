@@ -10,6 +10,10 @@ logging:
 spring:
   profiles:
     active: dev
+  data:
+    ldap:
+      repositories:
+        enabled: true
   datasource:
     driver-class-name: org.h2.Driver
     password: ''
@@ -26,6 +30,13 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
+  ldap:
+    base: dc=jho,dc=cn
+    embedded:
+      base-dn: dc=jho,dc=cn
+      ldif: classpath:test-ldap-server.ldif
+      port: 8389
+    urls: ldap://localhost:8389/
   h2:
     console:
       enabled: true

@@ -25,6 +25,7 @@
         <jquery.version>3.6.0</jquery.version>
         <passay.version>1.6.1</passay.version>
         <problom.version>0.28.0-RC.0</problom.version>
+        <jjwt.version>0.11.5</jjwt.version>
     </properties>
 
     <dependencyManagement>

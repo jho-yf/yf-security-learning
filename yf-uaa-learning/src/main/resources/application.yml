@@ -32,3 +32,10 @@ spring:
         trace: false
         # 禁止远程访问 H2 管理界面
         web-allow-others: false
+  ldap:
+    base: dc=jho,dc=cn
+    embedded:
+      base-dn: dc=jho,dc=cn
+      ldif: test-ldap-server.ldif
+      port: 8389
+    urls: ldap://localhost:8389/
